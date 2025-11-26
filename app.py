@@ -1,3 +1,8 @@
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
+
 from flask import Flask, render_template, request
 import sqlite3
 import pandas as pd
@@ -134,5 +139,9 @@ def exercicios():
     conn.close()
     return render_template("exercicios.html", exercicios=df.to_dict(orient="records"))
 
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
+
