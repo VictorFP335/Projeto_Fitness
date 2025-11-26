@@ -474,3 +474,92 @@ th {
 tbody tr:nth-child(even) {
     background-color: #f4f4f4;
 }
+
+
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f7f7f7;
+    margin: 0;
+    padding: 0;
+}
+
+.topbar {
+    background-color: #264653;
+    color: #fff;
+    padding: 15px;
+    font-size: 24px;
+    text-align: center;
+}
+
+.container {
+    max-width: 700px;
+    margin: 30px auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h2 {
+    color: #264653;
+}
+
+form label {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+form input, form select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background-color: #2a9d8f;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #21867a;
+}
+
+.resultado {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #e9f5f5;
+    border-radius: 5px;
+}
+
+.links {
+    margin-top: 20px;
+}
+
+.links .btn {
+    display: inline-block;
+    margin-right: 10px;
+    padding: 8px 15px;
+    background-color: #e76f51;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.links .btn:hover {
+    background-color: #d05a3f;
+}
+
+img {
+    max-width: 100%;
+    margin-top: 15px;
+}
+

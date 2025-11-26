@@ -2,14 +2,16 @@ import os
 import sqlite3
 import pandas as pd
 import matplotlib
-matplotlib.use('Agg')  # Necessário para Render (headless)
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import io
 import base64
 from flask import Flask, render_template, request
 
 app = Flask(__name__)
-DB_PATH = "calorifit.db"
+
+# Caminho do banco SQLite (Render precisa de pasta gravável)
+DB_PATH = os.path.join("/tmp", "calorifit.db")
 
 # Inicializar banco SQLite
 def init_db():
@@ -80,7 +82,8 @@ def gerar_grafico_interativo(tdee=0):
     plt.close()
     return f"data:image/png;base64,{img_base64}"
 
-# Rotas
+# --------------------- ROTAS ---------------------
+
 @app.route("/", methods=["GET", "POST"])
 def home():
     resultado = None
@@ -103,6 +106,29 @@ def home():
             graph = gerar_grafico_interativo(0)
 
     return render_template("home.html", resultado=resultado, graph=graph)
+
+@app.route("/metas", methods=["GET", "POST"])
+def metas():
+    resultado = None
+    graph = None
+
+    if request.method == "POST":
+        try:
+            peso = float(request.form.get("peso", 0))
+            altura = float(request.form.get("altura", 0))
+            idade = int(request.form.get("idade", 0))
+            sexo = request.form.get("sexo", "masculino")
+            fator_atividade = float(request.form.get("atividade", 1.2))
+
+            tmb = harris_benedict(peso, altura, idade, sexo)
+            tdee = calcular_tdee(tmb, fator_atividade)
+            resultado = {"tmb": tmb, "tdee": tdee}
+            graph = gerar_grafico_interativo(tdee)
+        except ValueError:
+            resultado = {"tmb": 0, "tdee": 0}
+            graph = gerar_grafico_interativo(0)
+
+    return render_template("metas.html", resultado=resultado, graph=graph)
 
 @app.route("/refeicoes", methods=["GET", "POST"])
 def refeicoes():
@@ -130,7 +156,8 @@ def exercicios():
     conn.close()
     return render_template("exercicios.html", exercicios=df.to_dict(orient="records"))
 
-# Rodar app
+# --------------------- RODAR APP ---------------------
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)

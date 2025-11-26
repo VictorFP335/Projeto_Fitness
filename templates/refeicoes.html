@@ -7,7 +7,6 @@
 </head>
 <body>
     <div class="topbar">CaloriFit - Refeições</div>
-
     <div class="container">
         <h2>Adicionar Refeição</h2>
         <form method="POST">
@@ -20,34 +19,16 @@
             <button type="submit">Adicionar</button>
         </form>
 
-        <hr>
-
-        <h2>Refeições Registradas</h2>
-        {% if refeicoes %}
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Descrição</th>
-                    <th>Calorias</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for refeicao in refeicoes %}
-                <tr>
-                    <td>{{ refeicao.id }}</td>
-                    <td>{{ refeicao.descricao }}</td>
-                    <td>{{ refeicao.calorias }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p>Nenhuma refeição registrada.</p>
-        {% endif %}
+        <h2>Lista de Refeições</h2>
+        <ul>
+            {% for r in refeicoes %}
+            <li>{{ r.descricao }} - {{ r.calorias }} kcal</li>
+            {% endfor %}
+        </ul>
 
         <div class="links">
-            <a href="/" class="btn">Voltar ao Dashboard</a>
+            <a href="/" class="btn">Home</a>
+            <a href="/metas" class="btn">Metas</a>
             <a href="/exercicios" class="btn">Exercícios</a>
         </div>
     </div>
