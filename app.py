@@ -10,8 +10,12 @@ from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
-# Caminho do banco SQLite (Render precisa de pasta gravável)
-DB_PATH = os.path.join("/tmp", "calorifit.db")
+# Caminho do banco SQLite dentro do projeto (funciona no Windows e Render)
+DB_PATH = os.path.join(os.path.dirname(__file__), "data", "calorifit.db")
+
+# Cria pasta data se não existir
+if not os.path.exists(os.path.dirname(DB_PATH)):
+    os.makedirs(os.path.dirname(DB_PATH))
 
 # Inicializar banco SQLite
 def init_db():
@@ -160,4 +164,4 @@ def exercicios():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(host="0.0.0.0", port=port, debug=True)
