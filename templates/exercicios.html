@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>CaloriFit - Exercícios</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="topbar">CaloriFit - Exercícios</div>
+
+    <div class="container">
+        <h2>Registrar Novo Exercício</h2>
+        <form method="POST">
+            <label for="descricao">Descrição:</label>
+            <input type="text" name="descricao" id="descricao" required>
+
+            <label for="calorias">Calorias Gastas (kcal):</label>
+            <input type="number" step="0.1" name="calorias" id="calorias" required>
+
+            <button type="submit">Adicionar Exercício</button>
+        </form>
+
+        <hr>
+
+        <h2>Histórico de Exercícios</h2>
+        {% if exercicios %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Descrição</th>
+                    <th>Calorias</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in exercicios %}
+                <tr>
+                    <td>{{ e.id }}</td>
+                    <td>{{ e.descricao }}</td>
+                    <td>{{ e.calorias }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>Nenhum exercício registrado ainda.</p>
+        {% endif %}
+
+        <div class="links">
+            <a href="/" class="btn">Voltar ao Dashboard</a>
+            <a href="/refeicoes" class="btn">Ir para Refeições</a>
+        </div>
+    </div>
+</body>
+</html>
