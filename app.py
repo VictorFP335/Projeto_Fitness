@@ -1,19 +1,17 @@
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-
-
-from flask import Flask, render_template, request
+import os
 import sqlite3
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')  # Necessário para Render (headless)
 import matplotlib.pyplot as plt
 import io
 import base64
+from flask import Flask, render_template, request
 
 app = Flask(__name__)
 DB_PATH = "calorifit.db"
 
-# Inicialização do banco SQLite
+# Inicializar banco SQLite
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -47,7 +45,7 @@ def harris_benedict(peso, altura, idade, sexo):
 def calcular_tdee(tmb, fator_atividade):
     return round(tmb * fator_atividade, 2)
 
-# Gerar gráfico interativo simples
+# Gerar gráfico interativo
 def gerar_grafico_interativo(tdee=0):
     conn = sqlite3.connect(DB_PATH)
     df_refeicoes = pd.read_sql("SELECT * FROM refeicoes", conn)
@@ -57,7 +55,6 @@ def gerar_grafico_interativo(tdee=0):
     total_refeicoes = df_refeicoes["calorias"].sum() if not df_refeicoes.empty else 0
     total_exercicios = df_exercicios["calorias"].sum() if not df_exercicios.empty else 0
 
-    # Cores indicam se calorias ingeridas excedem a meta
     cor_refeicoes = "#e76f51" if total_refeicoes > tdee else "#2a9d8f"
     cor_exercicios = "#f4a261"
     cor_meta = "#264653"
@@ -68,7 +65,6 @@ def gerar_grafico_interativo(tdee=0):
 
     plt.figure(figsize=(6,4))
     bars = plt.bar(labels, values, color=colors)
-
     for bar in bars:
         yval = bar.get_height()
         plt.text(bar.get_x() + bar.get_width()/2, yval + 5, f'{yval:.0f}', ha='center', va='bottom')
@@ -84,16 +80,12 @@ def gerar_grafico_interativo(tdee=0):
     plt.close()
     return f"data:image/png;base64,{img_base64}"
 
-# Home
-@app.route("/", methods=["GET"])
+# Rotas
+@app.route("/", methods=["GET", "POST"])
 def home():
-    return render_template("home.html")
-
-# Metas
-@app.route("/metas", methods=["GET", "POST"])
-def metas():
     resultado = None
-    tdee = 0
+    graph = None
+
     if request.method == "POST":
         try:
             peso = float(request.form.get("peso", 0))
@@ -105,13 +97,13 @@ def metas():
             tmb = harris_benedict(peso, altura, idade, sexo)
             tdee = calcular_tdee(tmb, fator_atividade)
             resultado = {"tmb": tmb, "tdee": tdee}
+            graph = gerar_grafico_interativo(tdee)
         except ValueError:
             resultado = {"tmb": 0, "tdee": 0}
+            graph = gerar_grafico_interativo(0)
 
-    graph = gerar_grafico_interativo(tdee)
-    return render_template("metas.html", resultado=resultado, graph=graph)
+    return render_template("home.html", resultado=resultado, graph=graph)
 
-# Refeicoes
 @app.route("/refeicoes", methods=["GET", "POST"])
 def refeicoes():
     conn = sqlite3.connect(DB_PATH)
@@ -125,7 +117,6 @@ def refeicoes():
     conn.close()
     return render_template("refeicoes.html", refeicoes=df.to_dict(orient="records"))
 
-# Exercicios
 @app.route("/exercicios", methods=["GET", "POST"])
 def exercicios():
     conn = sqlite3.connect(DB_PATH)
@@ -139,9 +130,7 @@ def exercicios():
     conn.close()
     return render_template("exercicios.html", exercicios=df.to_dict(orient="records"))
 
-
+# Rodar app
 if __name__ == "__main__":
-    import os
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)
-

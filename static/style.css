@@ -452,3 +452,25 @@ a.btn {
 a.btn:hover {
     background-color: #21867a;
 }
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+}
+
+th {
+    background-color: #2a9d8f;
+    color: #fff;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #f4f4f4;
+}

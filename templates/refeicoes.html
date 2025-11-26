@@ -9,20 +9,20 @@
     <div class="topbar">CaloriFit - Refeições</div>
 
     <div class="container">
-        <h2>Registrar Nova Refeição</h2>
+        <h2>Adicionar Refeição</h2>
         <form method="POST">
             <label for="descricao">Descrição:</label>
             <input type="text" name="descricao" id="descricao" required>
 
-            <label for="calorias">Calorias (kcal):</label>
+            <label for="calorias">Calorias:</label>
             <input type="number" step="0.1" name="calorias" id="calorias" required>
 
-            <button type="submit">Adicionar Refeição</button>
+            <button type="submit">Adicionar</button>
         </form>
 
         <hr>
 
-        <h2>Histórico de Refeições</h2>
+        <h2>Refeições Registradas</h2>
         {% if refeicoes %}
         <table>
             <thead>
@@ -33,22 +33,22 @@
                 </tr>
             </thead>
             <tbody>
-                {% for r in refeicoes %}
+                {% for refeicao in refeicoes %}
                 <tr>
-                    <td>{{ r.id }}</td>
-                    <td>{{ r.descricao }}</td>
-                    <td>{{ r.calorias }}</td>
+                    <td>{{ refeicao.id }}</td>
+                    <td>{{ refeicao.descricao }}</td>
+                    <td>{{ refeicao.calorias }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
         {% else %}
-        <p>Nenhuma refeição registrada ainda.</p>
+        <p>Nenhuma refeição registrada.</p>
         {% endif %}
 
         <div class="links">
             <a href="/" class="btn">Voltar ao Dashboard</a>
-            <a href="/exercicios" class="btn">Ir para Exercícios</a>
+            <a href="/exercicios" class="btn">Exercícios</a>
         </div>
     </div>
 </body>
