@@ -35,9 +35,36 @@ O **CaloriFit** surge como uma solução prática, permitindo ao usuário:
 ##  **Arquitetura da Solução**
 
 ###  Diagrama de Arquitetura
-*(insira aqui a imagem no seu GitHub, exemplo:)*  
-`![Arquitetura](![)
-)`
+User / Frontend (HTML + CSS + JS)
+│
+└─> Navegador acessa o domínio do Render
+    (ex.: https://calorifit.onrender.com)
+│
+├─> Frontend envia dados via formulários
+│     ├─ Registro de calorias
+│     ├─ Registro de exercícios
+│     ├─ Dashboard diário
+│     └─ Gráficos (AJAX → /grafico-data)
+│
+│
+Backend — Flask App (Python)
+│
+├─ /          → página inicial com dashboard
+├─ /calorias  → CRUD de refeições/calorias
+├─ /exercicios → CRUD de treinos
+├─ /grafico-data → retorna JSON para plotar no chart.js
+│
+├─ Controllers
+│     ├─ calories_controller.py
+│     ├─ exercises_controller.py
+│     └─ dashboard_controller.py
+│
+└─ Models (camada de acesso ao banco)
+      ├─ calories_model.py
+      ├─ exercises_model.py
+      └─ db.py (conexão SQLite)
+
+
 
 ###  Diagrama do Banco de Dados  
 ![Imagem do WhatsApp de 2025-11-27 à(s) 17 05 51_dce87a41](https://github.com/user-attachments/assets/e84a18e0-20cd-4776-8c5a-006eb113c9f6)
