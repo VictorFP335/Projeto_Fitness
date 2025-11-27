@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Baixar o repositório
+      - name: Baixar repositório
         uses: actions/checkout@v3
 
       - name: Instalar Python
@@ -20,9 +20,8 @@ jobs:
 
       - name: Instalar dependências
         run: |
-          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Testar se Flask roda
+      - name: Verificar se Flask está instalado
         run: |
           python -c "import flask; print('Flask OK')"
