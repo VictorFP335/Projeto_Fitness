@@ -1,48 +1,28 @@
-name: Python Flask CI
+name: CI - Testar Projeto Flask
 
 on:
   push:
-    branches: ["main"]
   pull_request:
-    branches: ["main"]
+  workflow_dispatch:
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout do código
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Baixar o repositório
+        uses: actions/checkout@v3
 
-    # Instalar Python
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.11"
+      - name: Instalar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
 
-    # Instalar dependências
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    # Testar se o app Flask roda sem erros
-    - name: Test Flask app import
-      run: |
-        python - << 'EOF'
-        try:
-            import app
-            print("✔ Flask importado com sucesso!")
-        except Exception as e:
-            print("❌ Erro ao importar o app:", e)
-            exit(1)
-        EOF
-
-    # Logs das dependências instaladas
-    - name: Show installed packages
-      run: pip list
-
-    # Logs do diretório
-    - name: Show project files
-      run: ls -R .
+      - name: Testar se Flask roda
+        run: |
+          python -c "import flask; print('Flask OK')"

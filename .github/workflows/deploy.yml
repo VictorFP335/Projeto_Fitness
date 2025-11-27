@@ -1,0 +1,45 @@
+name: CI/CD - Calorifit
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+
+  # ========================================
+  #              CI - TESTES
+  # ========================================
+  test:
+    name: Run Python Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Tests
+        run: pytest -q
+
+
+  # ========================================
+  #              CD - DEPLOY
+  # ========================================
+  deploy:
+    name: Deploy to Render
+    needs: test      # só deploya se os testes passarem
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger Render Deploy
+        run: |
+          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
