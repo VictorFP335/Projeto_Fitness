@@ -36,10 +36,11 @@ O **CaloriFit** surge como uma solução prática, permitindo ao usuário:
 
 ###  Diagrama de Arquitetura
 *(insira aqui a imagem no seu GitHub, exemplo:)*  
-`![Arquitetura](docs/arquitetura.png)`
+`![Arquitetura](![)
+)`
 
 ###  Diagrama do Banco de Dados  
-`![DB](docs/database-diagram.png)`
+`![DB](docs/Imagem do WhatsApp de 2025-11-27 à(s) 17 05 51_dce87a41](https://github.com/user-attachments/assets/4773823e-c42d-4076-a0db-f2b98c7327b2)`
 
 ---
 
