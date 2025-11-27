@@ -1,3 +1,7 @@
+# Assita o video explicação do funcionamento do web service cloud
+https://youtu.be/ISwruId5Hyk
+
+
 #  CaloriFit — Sistema de Análise de Dados
 
 Projeto desenvolvido para ajudar usuários a registrarem suas refeições diárias e acompanharem o total de calorias consumidas de forma prática e rápida.
