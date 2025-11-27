@@ -35,6 +35,9 @@ O **CaloriFit** surge como uma solução prática, permitindo ao usuário:
 ##  **Arquitetura da Solução**
 
 ###  Diagrama de Arquitetura
+## 🔧 Arquitetura — Fluxo da Aplicação
+
+```
 User / Frontend (HTML + CSS + JS)
 │
 └─> Navegador acessa o domínio do Render
@@ -49,10 +52,10 @@ User / Frontend (HTML + CSS + JS)
 │
 Backend — Flask App (Python)
 │
-├─ /          → página inicial com dashboard
-├─ /calorias  → CRUD de refeições/calorias
-├─ /exercicios → CRUD de treinos
-├─ /grafico-data → retorna JSON para plotar no chart.js
+├─ /               → página inicial com dashboard
+├─ /calorias       → CRUD de refeições/calorias
+├─ /exercicios     → CRUD de treinos
+├─ /grafico-data   → retorna JSON para plotar no chart.js
 │
 ├─ Controllers
 │     ├─ calories_controller.py
@@ -63,6 +66,8 @@ Backend — Flask App (Python)
       ├─ calories_model.py
       ├─ exercises_model.py
       └─ db.py (conexão SQLite)
+```
+
 
 
 
