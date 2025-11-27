@@ -1,36 +1,27 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<!doctype html>
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>CaloriFit - Exercícios</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="utf-8">
+  <title>Exercícios</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="topbar">CaloriFit - Exercícios</div>
-    <div class="container">
-        <h2>Adicionar Exercício</h2>
-        <form method="POST">
-            <label for="descricao">Descrição:</label>
-            <input type="text" name="descricao" id="descricao" required>
+  <div class="topbar">Exercícios</div>
+  <div class="container">
+    <form action="/add_exercicio" method="post" class="card form-card">
+      <input name="nome" placeholder="Exercício" required>
+      <input name="calorias" type="number" placeholder="Calorias gastas" required>
+      <button class="btn blue">Adicionar</button>
+    </form>
 
-            <label for="calorias">Calorias gastas:</label>
-            <input type="number" step="0.1" name="calorias" id="calorias" required>
+    <table>
+      <tr><th>Exercício</th><th>Calorias</th><th>Data</th></tr>
+      {% for e in exercicios %}
+      <tr><td>{{ e['nome'] }}</td><td>{{ e['calorias_gastas'] }}</td><td>{{ e['data_registro'] }}</td></tr>
+      {% endfor %}
+    </table>
 
-            <button type="submit">Adicionar</button>
-        </form>
-
-        <h2>Lista de Exercícios</h2>
-        <ul>
-            {% for e in exercicios %}
-            <li>{{ e.descricao }} - {{ e.calorias }} kcal</li>
-            {% endfor %}
-        </ul>
-
-        <div class="links">
-            <a href="/" class="btn">Home</a>
-            <a href="/metas" class="btn">Metas</a>
-            <a href="/refeicoes" class="btn">Refeições</a>
-        </div>
-    </div>
+    <a class="btn" href="/">Voltar</a>
+  </div>
 </body>
 </html>

@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Refeições</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="topbar">Refeições</div>
+  <div class="container">
+    <form action="/add_calorias" method="post" class="card form-card">
+      <input name="nome" placeholder="Alimento" required>
+      <input name="calorias" type="number" placeholder="Calorias" required>
+      <button class="btn green">Adicionar</button>
+    </form>
+
+    <table>
+      <tr><th>Alimento</th><th>Calorias</th><th>Data</th></tr>
+      {% for r in refeicoes %}
+      <tr><td>{{ r['nome'] }}</td><td>{{ r['calorias'] }}</td><td>{{ r['data_registro'] }}</td></tr>
+      {% endfor %}
+    </table>
+
+    <a class="btn" href="/">Voltar</a>
+  </div>
+</body>
+</html>

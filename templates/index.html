@@ -1,47 +1,49 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+<!doctype html>
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Calculadora TMB - Harris Benedict</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="utf-8">
+  <title>CaloriFit - Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>Calculadora TMB - Harris Benedict</h1>
-        <form method="POST">
-            <label for="peso">Peso (kg):</label>
-            <input type="number" step="0.1" name="peso" id="peso" required>
-
-            <label for="altura">Altura (cm):</label>
-            <input type="number" step="0.1" name="altura" id="altura" required>
-
-            <label for="idade">Idade (anos):</label>
-            <input type="number" name="idade" id="idade" required>
-
-            <label for="sexo">Sexo:</label>
-            <select name="sexo" id="sexo">
-                <option value="masculino">Masculino</option>
-                <option value="feminino">Feminino</option>
-            </select>
-
-            <label for="atividade">Nível de atividade física:</label>
-            <select name="atividade" id="atividade">
-                <option value="1.2">Sedentário (Pouco ou nenhum exercício)</option>
-                <option value="1.375">Levemente ativo (Exercício leve 1-3 dias/semana)</option>
-                <option value="1.55">Moderadamente ativo (Exercício moderado 3-5 dias/semana)</option>
-                <option value="1.725">Muito ativo (Exercício intenso 6-7 dias/semana)</option>
-                <option value="1.9">Extremamente ativo (Exercício físico diário intenso / trabalho físico)</option>
-            </select>
-
-            <button type="submit">Calcular TMB e TDEE</button>
-        </form>
-
-        {% if resultado %}
-        <div class="resultado">
-            <h2>Seu TMB é: {{ resultado.tmb }} kcal/dia</h2>
-            <h2>Seu TDEE é: {{ resultado.tdee }} kcal/dia</h2>
-        </div>
-        {% endif %}
+  <div class="topbar">CaloriFit</div>
+  <div class="container">
+    <div class="cards">
+      <div class="card green">
+        <h3>Consumidas</h3><p>{{ ingeridas }} kcal</p>
+      </div>
+      <div class="card blue">
+        <h3>Gastas</h3><p>{{ gastas }} kcal</p>
+      </div>
+      <div class="card orange">
+        <h3>Saldo</h3><p>{{ saldo }} kcal</p>
+      </div>
     </div>
+
+    <canvas id="graficoCalorias" style="max-width:600px"></canvas>
+
+    <div class="menu">
+      <a class="btn" href="/calorias">Registrar Refeições</a>
+      <a class="btn" href="/exercicios">Registrar Exercícios</a>
+    </div>
+  </div>
+
+<script>
+fetch("/grafico-data")
+  .then(r => r.json())
+  .then(data => {
+    new Chart(document.getElementById("graficoCalorias"), {
+      type: 'bar',
+      data: {
+        labels: ["Consumidas","Gastas"],
+        datasets: [{
+          label: "Calorias",
+          data: [data.ingeridas, data.gastas]
+        }]
+      }
+    });
+  })
+</script>
 </body>
 </html>
