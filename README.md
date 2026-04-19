@@ -39,6 +39,8 @@ Projeto desenvolvido para ajudar usuários a registrarem suas refeições diári
 Banco de Dados Diagrama:
 ---
 
+
+
 ##  **Descrição Geral**
 
 Muitas pessoas desejam controlar a alimentação e acompanhar a ingestão diária de calorias, mas acabam desistindo por falta de ferramentas simples e intuitivas.
@@ -67,8 +69,35 @@ Hospedagem: Azure App Service
 ##  **Arquitetura da Solução**
 
 ###  Diagrama de Arquitetura
-*(insira aqui a imagem no seu GitHub, exemplo:)*  
-`![Arquitetura](docs/arquitetura.png)`
+User / Frontend (HTML + CSS + JS)
+│
+└─> Navegador acessa o domínio do Render
+    (ex.: https://calorifit.onrender.com)
+│
+├─> Frontend envia dados via formulários
+│     ├─ Registro de calorias
+│     ├─ Registro de exercícios
+│     ├─ Dashboard diário
+│     └─ Gráficos (AJAX → /grafico-data)
+│
+│
+Backend — Flask App (Python)
+│
+├─ /          → página inicial com dashboard
+├─ /calorias  → CRUD de refeições/calorias
+├─ /exercicios → CRUD de treinos
+├─ /grafico-data → retorna JSON para plotar no chart.js
+│
+├─ Controllers
+│     ├─ calories_controller.py
+│     ├─ exercises_controller.py
+│     └─ dashboard_controller.py
+│
+└─ Models (camada de acesso ao banco)
+      ├─ calories_model.py
+      ├─ exercises_model.py
+      └─ db.py (conexão SQLite)
+
 
 Armazenamento de arquivos e logs: Azure Blob Storage
 ###  Diagrama do Banco de Dados  
