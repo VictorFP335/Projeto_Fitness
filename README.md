@@ -7,18 +7,7 @@ https://youtu.be/ISwruId5Hyk
 #  CaloriFit — Sistema de Análise de Dados
 
 
-@@ -1,104 +1,141 @@
-TEMPLATE - README para o Projeto
-CaloriFit
-Sistema de Análise de Dados
-Equipe
-Enzo Braggion Cyrino — 23008519 — enzo.bc@puccampinas.edu.br
-Veronica Marques Ribeiro — 21943055—veronica.mr@puccampinas.edu.br
-Victor Furumoto Puttomatti-23007606-victor.fp5@puccampinas.edu.br
-Descrição Geral
-Muitas pessoas desejam controlar a alimentação e acompanhar quantas calorias consomem diariamente, mas acabam desistindo por falta de ferramentas simples.
- O CaloriFit foi criado para resolver esse problema, permitindo que o usuário registre suas refeições diárias e acompanhe o total de calorias consumidas de forma prática e rápida.
-#  CaloriFit — Sistema de Análise de Dados
+#  2CaloriFit — Sistema de Análise de Dados
 
 Dataset
 Fonte dos dados (URL, API, dataset público etc.)
@@ -27,7 +16,6 @@ Licenciamento do dataset (MIT or None)
 Arquitetura da Solução
 diagrama de arquitetura 
 Projeto desenvolvido para ajudar usuários a registrarem suas refeições diárias e acompanharem o total de calorias consumidas de forma prática e rápida.
-
 ---
 
 ##  **Equipe**
@@ -43,7 +31,8 @@ Banco de Dados Diagrama:
 
 ##  **Descrição Geral**
 
-Muitas pessoas desejam controlar a alimentação e acompanhar a ingestão diária de calorias, mas acabam desistindo por falta de ferramentas simples e intuitivas.
+Muitas pessoas desejam controlar a alimentação e acompanhar quantas calorias consomem diariamente, mas acabam desistindo por falta de ferramentas simples.
+ O CaloriFit foi criado para resolver esse problema, permitindo que o usuário registre suas refeições diárias e acompanhe o total de calorias consumidas de forma prática e rápida.
 
 Componentes principais:
 Frontend: HTML, CSS, Bootstrap
