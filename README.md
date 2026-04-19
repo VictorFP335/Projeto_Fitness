@@ -72,7 +72,7 @@ Hospedagem: Azure App Service
 
 Armazenamento de arquivos e logs: Azure Blob Storage
 ###  Diagrama do Banco de Dados  
-`![DB](docs/database-diagram.png)`
+![Imagem do WhatsApp de 2025-11-27 à(s) 17 05 51_dce87a41](https://github.com/user-attachments/assets/e84a18e0-20cd-4776-8c5a-006eb113c9f6)
 
 ---
 
