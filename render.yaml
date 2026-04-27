@@ -1,0 +1,22 @@
+databases:
+  - name: calorifit-db
+    databaseName: calorifit
+    user: calorifit_user
+    plan: free
+
+services:
+  - type: web
+    name: calorifit
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: cd CaloriFit && gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.4
+      - key: DATABASE_URL
+        fromDatabase:
+          name: calorifit-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
