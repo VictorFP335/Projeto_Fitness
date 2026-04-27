@@ -192,6 +192,71 @@
             font-style: italic;
             line-height: 1.5;
         }
+
+        .reminders-card {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #f59e0b;
+        }
+
+        .reminder-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #334155;
+            transition: background 0.2s;
+        }
+
+        .reminder-item:last-child {
+            border-bottom: none;
+        }
+
+        .reminder-text {
+            flex: 1;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .reminder-text.done {
+            text-decoration: line-through;
+            color: #64748b;
+        }
+
+        .reminder-delete {
+            color: #ef4444;
+            text-decoration: none;
+            margin-left: 15px;
+            font-size: 0.8rem;
+        }
+
+        .add-reminder-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .add-reminder-input {
+            flex: 1;
+            padding: 8px;
+            border-radius: 6px;
+            border: none;
+            background: #334155;
+            color: white;
+        }
+
+        .btn-add-reminder {
+            padding: 8px 15px;
+            background: #f59e0b;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -255,6 +320,27 @@
                     <button type="submit" class="btn-water">💧 +1L</button>
                 </form>
             </div>
+            </div>
+        </div>
+
+        <div class="reminders-card">
+            <h3 style="color: #f59e0b; margin-top: 0; text-align: left;">📋 Lembretes do Dia</h3>
+            <div id="reminder-list">
+                {% for lembrete in lembretes %}
+                <div class="reminder-item">
+                    <a href="/toggle_lembrete/{{ lembrete.id }}" class="reminder-text {% if lembrete.concluido %}done{% endif %}" style="text-decoration: none; color: inherit;">
+                        {% if lembrete.concluido %}✅{% else %}⬜{% endif %} {{ lembrete.texto }}
+                    </a>
+                    <a href="/delete_lembrete/{{ lembrete.id }}" class="reminder-delete">Excluir</a>
+                </div>
+                {% else %}
+                <p style="color: #94a3b8; font-size: 0.9rem; text-align: left;">Nenhum lembrete para hoje. Adicione um!</p>
+                {% endfor %}
+            </div>
+            <form action="/add_lembrete" method="POST" class="add-reminder-form">
+                <input type="text" name="texto" class="add-reminder-input" placeholder="Novo lembrete (ex: Tomar Creatina)" required>
+                <button type="submit" class="btn-add-reminder">+</button>
+            </form>
         </div>
 
         <div class="chart-wrapper">

@@ -31,6 +31,7 @@ class User(UserMixin, db.Model):
     refeicoes = db.relationship('Refeicao', backref='user', lazy=True)
     exercicios = db.relationship('Exercicio', backref='user', lazy=True)
     aguas = db.relationship('Agua', backref='user', lazy=True)
+    lembretes = db.relationship('Lembrete', backref='user', lazy=True)
 
     def calcular_bmr(self):
         # Fórmula de Harris-Benedict
@@ -67,6 +68,12 @@ class Agua(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     quantidade_ml = db.Column(db.Integer, nullable=False)
     data = db.Column(db.String(50), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+class Lembrete(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    texto = db.Column(db.String(200), nullable=False)
+    concluido = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 with app.app_context():
@@ -157,6 +164,7 @@ def home():
     refeicoes_data = Refeicao.query.filter_by(user_id=current_user.id).all()
     exercicios_data = Exercicio.query.filter_by(user_id=current_user.id).all()
     aguas_data = Agua.query.filter_by(user_id=current_user.id).all()
+    lembretes = Lembrete.query.filter_by(user_id=current_user.id).all()
     
     # Processamento para agrupar por dia (Gráficos melhorados)
     consumo_por_dia = {}
@@ -204,6 +212,7 @@ def home():
         calorias_restantes=round(calorias_restantes, 2),
         agua_consumida=agua_consumida,
         meta_agua=meta_agua,
+        lembretes=lembretes,
         labels_dias=todas_datas,
         dados_consumo=grafico_consumo,
         dados_gasto=grafico_gasto
@@ -251,6 +260,34 @@ def add_agua():
     nova_agua = Agua(quantidade_ml=quantidade_ml, data=data, user_id=current_user.id)
     db.session.add(nova_agua)
     db.session.commit()
+    return redirect(url_for('home'))
+
+@app.route('/add_lembrete', methods=['POST'])
+@login_required
+def add_lembrete():
+    texto = request.form['texto']
+    if texto:
+        novo = Lembrete(texto=texto, user_id=current_user.id)
+        db.session.add(novo)
+        db.session.commit()
+    return redirect(url_for('home'))
+
+@app.route('/toggle_lembrete/<int:id>')
+@login_required
+def toggle_lembrete(id):
+    lembrete = Lembrete.query.get_or_404(id)
+    if lembrete.user_id == current_user.id:
+        lembrete.concluido = not lembrete.concluido
+        db.session.commit()
+    return redirect(url_for('home'))
+
+@app.route('/delete_lembrete/<int:id>')
+@login_required
+def delete_lembrete(id):
+    lembrete = Lembrete.query.get_or_404(id)
+    if lembrete.user_id == current_user.id:
+        db.session.delete(lembrete)
+        db.session.commit()
     return redirect(url_for('home'))
 
 if __name__ == '__main__':
