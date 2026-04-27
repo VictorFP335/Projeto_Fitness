@@ -32,6 +32,7 @@ class User(UserMixin, db.Model):
     exercicios = db.relationship('Exercicio', backref='user', lazy=True)
     aguas = db.relationship('Agua', backref='user', lazy=True)
     lembretes = db.relationship('Lembrete', backref='user', lazy=True)
+    pesos = db.relationship('PesoLog', backref='user', lazy=True, order_by='PesoLog.data_crua')
 
     def calcular_bmr(self):
         # Fórmula de Harris-Benedict
@@ -74,6 +75,13 @@ class Lembrete(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     texto = db.Column(db.String(200), nullable=False)
     concluido = db.Column(db.Boolean, default=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+class PesoLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    valor = db.Column(db.Float, nullable=False)
+    data = db.Column(db.String(50), nullable=False)
+    data_crua = db.Column(db.DateTime, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 with app.app_context():
@@ -165,15 +173,19 @@ def home():
     exercicios_data = Exercicio.query.filter_by(user_id=current_user.id).all()
     aguas_data = Agua.query.filter_by(user_id=current_user.id).all()
     lembretes = Lembrete.query.filter_by(user_id=current_user.id).all()
+    pesos_data = PesoLog.query.filter_by(user_id=current_user.id).order_by(PesoLog.data_crua.asc()).all()
+    
+    # Pegar data do calendário (ou hoje)
+    data_selecionada_input = request.args.get('data') # formato YYYY-MM-DD do input date
+    if data_selecionada_input:
+        dt_obj = datetime.strptime(data_selecionada_input, '%Y-%m-%d')
+        hj = dt_obj.strftime("%d/%m/%Y")
+        data_exibicao = data_selecionada_input
+    else:
+        hj = datetime.now().strftime("%d/%m/%Y")
+        data_exibicao = datetime.now().strftime("%Y-%m-%d")
     
     # Processamento para agrupar por dia (Gráficos melhorados)
-    consumo_por_dia = {}
-    gasto_por_dia = {}
-    
-    total_consumido = 0
-    total_gasto = 0
-    agua_consumida = 0
-    hj = datetime.now().strftime("%d/%m/%Y")
     
     for r in refeicoes_data:
         dia = r.data.split(' ')[0]
@@ -214,9 +226,28 @@ def home():
         meta_agua=meta_agua,
         lembretes=lembretes,
         labels_dias=todas_datas,
-        dados_consumo=grafico_consumo,
-        dados_gasto=grafico_gasto
+        dados_gasto=grafico_gasto,
+        data_exibicao=data_exibicao,
+        labels_peso=[p.data for p in pesos_data],
+        valores_peso=[p.valor for p in pesos_data]
     )
+
+@app.route('/add_peso', methods=['POST'])
+@login_required
+def add_peso():
+    valor = float(request.form['valor'])
+    data = datetime.now().strftime("%d/%m/%Y")
+    
+    # Atualiza o peso atual do usuário
+    current_user.peso = valor
+    
+    # Cria log para o gráfico
+    novo_log = PesoLog(valor=valor, data=data, user_id=current_user.id)
+    db.session.add(novo_log)
+    db.session.commit()
+    
+    flash('Peso atualizado com sucesso!', 'info')
+    return redirect(url_for('home'))
 
 @app.route('/refeicoes')
 @login_required

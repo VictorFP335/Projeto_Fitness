@@ -263,6 +263,9 @@
     <div class="topbar">
         <div class="title">CaloriFit</div>
         <div class="user-info">
+            <form action="/" method="GET" style="margin-right: 15px;">
+                <input type="date" name="data" value="{{ data_exibicao }}" onchange="this.form.submit()" style="padding: 5px; border-radius: 4px; border: none; background: #334155; color: white;">
+            </form>
             <span>Olá, {{ current_user.nome }}</span>
             <a href="/logout" class="logout-btn">Sair</a>
         </div>
@@ -300,6 +303,13 @@
             <div class="card" style="border-top-color: #38bdf8;">
                 <h3>Água (Hoje)</h3>
                 <div class="value" style="color: #38bdf8;">{{ agua_consumida }} <span style="font-size: 0.9rem; color: #94a3b8;">/ {{ meta_agua }} ml</span></div>
+            </div>
+            <div class="card" style="border-top-color: #f59e0b;">
+                <h3>Meu Peso</h3>
+                <form action="/add_peso" method="POST" style="display: flex; gap: 5px; margin-top: 5px;">
+                    <input type="number" step="0.1" name="valor" value="{{ current_user.peso }}" style="width: 70px; padding: 5px; border-radius: 4px; border: none; background: #334155; color: white; margin: 0;">
+                    <button type="submit" style="padding: 5px 10px; background: #f59e0b; border: none; border-radius: 4px; color: white; cursor: pointer;">Salvar</button>
+                </form>
             </div>
         </div>
 
@@ -349,6 +359,13 @@
                 data-consumo='{{ dados_consumo|tojson }}'
                 data-gasto='{{ dados_gasto|tojson }}'
                 data-bmr='{{ bmr }}'
+            ></canvas>
+        </div>
+
+        <div class="chart-wrapper">
+            <canvas id="pesoChart"
+                data-labels-peso='{{ labels_peso|tojson }}'
+                data-valores-peso='{{ valores_peso|tojson }}'
             ></canvas>
         </div>
     </div>
@@ -419,8 +436,47 @@
                     }
                 },
                 scales: {
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        // Segundo Gráfico: Evolução de Peso
+        const canvasPeso = document.getElementById('pesoChart');
+        const ctxPeso = canvasPeso.getContext('2d');
+        const labelsPeso = JSON.parse(canvasPeso.dataset.labelsPeso);
+        const valoresPeso = JSON.parse(canvasPeso.dataset.valoresPeso);
+
+        new Chart(ctxPeso, {
+            type: 'line',
+            data: {
+                labels: labelsPeso,
+                datasets: [{
+                    label: 'Peso (kg)',
+                    data: valoresPeso,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#f59e0b',
+                    pointRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Evolução do Peso Corporal',
+                        color: '#f8fafc',
+                        font: { size: 16 }
+                    }
+                },
+                scales: {
                     y: {
-                        beginAtZero: true,
                         grid: { color: '#334155' }
                     },
                     x: {
