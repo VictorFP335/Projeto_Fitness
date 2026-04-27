@@ -37,12 +37,31 @@
 </div>
 
 <div class="container">
-    <div class="card">
-        <h3>Adicionar Exercício</h3>
+    <div class="card" style="border-top-color: #3b82f6;">
+        <h3 style="color: #3b82f6;">Calculadora de Exercícios</h3>
+        <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 15px; margin-top: -10px;">Estime o gasto calórico baseado no seu peso (<strong>{{ current_user.peso }} kg</strong>) e tempo de treino.</p>
+        <div style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
+            <select id="calc-exercicio" style="flex: 2; padding: 10px; border-radius: 6px; background: #334155; color: white; border: none; font-family: 'Inter', sans-serif;">
+                <option value="caminhada">Caminhada (Moderada)</option>
+                <option value="corrida">Corrida (~10 km/h)</option>
+                <option value="academia">Musculação (Academia)</option>
+                <option value="bicicleta">Bicicleta (Moderada)</option>
+                <option value="natacao">Natação</option>
+                <option value="corda">Pular Corda</option>
+                <option value="futebol">Futebol</option>
+                <option value="danca">Dança / Aeróbica</option>
+            </select>
+            <input type="number" id="calc-tempo" placeholder="Tempo (minutos)" style="flex: 1; margin: 0;">
+        </div>
+        <button type="button" onclick="calcularExercicio()" style="width: 100%; padding: 10px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s;">Calcular e Preencher ↓</button>
+    </div>
+
+    <div class="card" id="main-form-card">
+        <h3>Adicionar Exercício (Manual)</h3>
         <form action="/add_exercicio" method="POST">
-            <input type="text" name="nome" placeholder="Exercício (ex: Corrida 30min)" required>
-            <input type="number" name="calorias" placeholder="Calorias Gastas" required>
-            <button type="submit">Adicionar</button>
+            <input type="text" name="nome" id="desc-exercicio" placeholder="Exercício (ex: Corrida 30min)" required>
+            <input type="number" name="calorias" id="cal-exercicio" placeholder="Calorias Gastas" required>
+            <button type="submit">Salvar Exercício</button>
         </form>
     </div>
 
@@ -68,5 +87,50 @@
     </div>
 </div>
 
+<script>
+    // Injeta o peso do usuário vindo do backend do Flask
+    const pesoUsuario = parseFloat("{{ current_user.peso }}");
+    
+    const tabelaMET = {
+        'caminhada': { nome: 'Caminhada', met: 4.0 },
+        'corrida': { nome: 'Corrida', met: 9.8 },
+        'academia': { nome: 'Musculação', met: 4.5 },
+        'bicicleta': { nome: 'Bicicleta', met: 7.5 },
+        'natacao': { nome: 'Natação', met: 7.0 },
+        'corda': { nome: 'Pular Corda', met: 11.0 },
+        'futebol': { nome: 'Futebol', met: 7.0 },
+        'danca': { nome: 'Dança / Aeróbica', met: 5.0 }
+    };
+
+    function calcularExercicio() {
+        const idExercicio = document.getElementById('calc-exercicio').value;
+        const tempoStr = document.getElementById('calc-tempo').value;
+        const minutos = parseFloat(tempoStr);
+
+        if (isNaN(minutos) || minutos <= 0) {
+            alert("Por favor, insira um tempo válido em minutos.");
+            return;
+        }
+
+        const exercicio = tabelaMET[idExercicio];
+        const horas = minutos / 60;
+        
+        // Fórmula Oficial: Calorias = MET * Peso (kg) * Tempo (horas)
+        let caloriasGastas = exercicio.met * pesoUsuario * horas;
+        caloriasGastas = Math.round(caloriasGastas);
+
+        // Preenche o formulário principal
+        document.getElementById('desc-exercicio').value = `${exercicio.nome} (${minutos} min)`;
+        document.getElementById('cal-exercicio').value = caloriasGastas;
+        
+        // Efeito visual de destaque (brilho azul)
+        const mainForm = document.getElementById('main-form-card');
+        mainForm.style.transition = "box-shadow 0.3s";
+        mainForm.style.boxShadow = "0 0 15px #3b82f6";
+        setTimeout(() => {
+            mainForm.style.boxShadow = "0 4px 6px rgba(0,0,0,0.1)";
+        }, 1000);
+    }
+</script>
 </body>
 </html>
