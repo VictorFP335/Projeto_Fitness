@@ -101,6 +101,35 @@
             margin-bottom: 30px;
             display: flex;
             gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .water-actions {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .water-actions form {
+            flex: 1;
+        }
+
+        .btn-water {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            background: rgba(56, 189, 248, 0.2);
+            color: #38bdf8;
+            border: 1px solid #38bdf8;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-water:hover {
+            background: #38bdf8;
+            color: #0f172a;
         }
 
         .btn {
@@ -203,11 +232,29 @@
                     {{ calorias_restantes }} kcal
                 </div>
             </div>
+            <div class="card" style="border-top-color: #38bdf8;">
+                <h3>Água (Hoje)</h3>
+                <div class="value" style="color: #38bdf8;">{{ agua_consumida }} <span style="font-size: 0.9rem; color: #94a3b8;">/ {{ meta_agua }} ml</span></div>
+            </div>
         </div>
 
         <div class="actions">
             <a href="/refeicoes" class="btn green">Gerenciar Refeições</a>
             <a href="/exercicios" class="btn blue">Gerenciar Exercícios</a>
+            <div class="water-actions">
+                <form action="/add_agua" method="POST">
+                    <input type="hidden" name="quantidade_ml" value="250">
+                    <button type="submit" class="btn-water">💧 +250ml</button>
+                </form>
+                <form action="/add_agua" method="POST">
+                    <input type="hidden" name="quantidade_ml" value="500">
+                    <button type="submit" class="btn-water">💧 +500ml</button>
+                </form>
+                <form action="/add_agua" method="POST">
+                    <input type="hidden" name="quantidade_ml" value="1000">
+                    <button type="submit" class="btn-water">💧 +1L</button>
+                </form>
+            </div>
         </div>
 
         <div class="chart-wrapper">

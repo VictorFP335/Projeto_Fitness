@@ -30,6 +30,7 @@ class User(UserMixin, db.Model):
     anotacoes = db.Column(db.Text, nullable=True)
     refeicoes = db.relationship('Refeicao', backref='user', lazy=True)
     exercicios = db.relationship('Exercicio', backref='user', lazy=True)
+    aguas = db.relationship('Agua', backref='user', lazy=True)
 
     def calcular_bmr(self):
         # Fórmula de Harris-Benedict
@@ -37,6 +38,16 @@ class User(UserMixin, db.Model):
             return 88.362 + (13.397 * self.peso) + (4.799 * self.altura) - (5.677 * self.idade)
         else:
             return 447.593 + (9.247 * self.peso) + (3.098 * self.altura) - (4.330 * self.idade)
+
+    def calcular_meta_agua(self):
+        if self.idade < 18:
+            return int(self.peso * 40)
+        elif 18 <= self.idade <= 55:
+            return int(self.peso * 35)
+        elif 55 < self.idade <= 65:
+            return int(self.peso * 30)
+        else:
+            return int(self.peso * 25)
 
 class Refeicao(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -49,6 +60,12 @@ class Exercicio(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
     calorias = db.Column(db.Integer, nullable=False)
+    data = db.Column(db.String(50), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+class Agua(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    quantidade_ml = db.Column(db.Integer, nullable=False)
     data = db.Column(db.String(50), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
@@ -139,6 +156,7 @@ def forgot_password():
 def home():
     refeicoes_data = Refeicao.query.filter_by(user_id=current_user.id).all()
     exercicios_data = Exercicio.query.filter_by(user_id=current_user.id).all()
+    aguas_data = Agua.query.filter_by(user_id=current_user.id).all()
     
     # Processamento para agrupar por dia (Gráficos melhorados)
     consumo_por_dia = {}
@@ -146,6 +164,7 @@ def home():
     
     total_consumido = 0
     total_gasto = 0
+    agua_consumida = 0
     hj = datetime.now().strftime("%d/%m/%Y")
     
     for r in refeicoes_data:
@@ -160,6 +179,11 @@ def home():
         if dia == hj:
             total_gasto += e.calorias
 
+    for a in aguas_data:
+        dia = a.data.split(' ')[0]
+        if dia == hj:
+            agua_consumida += a.quantidade_ml
+
     # Combinar todas as datas (únicas e ordenadas em formato string pra simplicar)
     todas_datas = sorted(list(set(list(consumo_por_dia.keys()) + list(gasto_por_dia.keys()))))
     
@@ -169,6 +193,8 @@ def home():
     # Harris-Benedict BMR
     bmr = current_user.calcular_bmr()
     calorias_restantes = bmr + total_gasto - total_consumido
+    
+    meta_agua = current_user.calcular_meta_agua()
 
     return render_template(
         'home.html',
@@ -176,6 +202,8 @@ def home():
         total_consumido=total_consumido,
         total_gasto=total_gasto,
         calorias_restantes=round(calorias_restantes, 2),
+        agua_consumida=agua_consumida,
+        meta_agua=meta_agua,
         labels_dias=todas_datas,
         dados_consumo=grafico_consumo,
         dados_gasto=grafico_gasto
@@ -214,6 +242,16 @@ def add_exercicio():
     db.session.add(novo)
     db.session.commit()
     return redirect('/exercicios')
+
+@app.route('/add_agua', methods=['POST'])
+@login_required
+def add_agua():
+    quantidade_ml = int(request.form['quantidade_ml'])
+    data = datetime.now().strftime("%d/%m/%Y %H:%M")
+    nova_agua = Agua(quantidade_ml=quantidade_ml, data=data, user_id=current_user.id)
+    db.session.add(nova_agua)
+    db.session.commit()
+    return redirect(url_for('home'))
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
