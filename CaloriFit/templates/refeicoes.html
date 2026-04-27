@@ -37,12 +37,38 @@
 </div>
 
 <div class="container">
-    <div class="card">
-        <h3>Adicionar Refeição</h3>
+    <div class="card" style="border-top-color: #8b5cf6;">
+        <h3 style="color: #8b5cf6;">Calculadora de Alimentos</h3>
+        <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 15px; margin-top: -10px;">Selecione o alimento e a quantidade para calcular as calorias automaticamente.</p>
+        <div style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
+            <select id="calc-alimento" style="flex: 2; padding: 10px; border-radius: 6px; background: #334155; color: white; border: none; font-family: 'Inter', sans-serif;">
+                <option value="arroz_branco">Arroz Branco</option>
+                <option value="feijao_carioca">Feijão Carioca</option>
+                <option value="frango_grelhado">Frango Grelhado</option>
+                <option value="carne_moida">Carne Moída (Patinho)</option>
+                <option value="ovo_cozido">Ovo Cozido</option>
+                <option value="aveia">Aveia em Flocos</option>
+                <option value="banana">Banana Prata</option>
+                <option value="pao_frances">Pão Francês</option>
+            </select>
+            <select id="calc-unidade" style="flex: 1; padding: 10px; border-radius: 6px; background: #334155; color: white; border: none; font-family: 'Inter', sans-serif;">
+                <option value="colher_sopa">Colher de Sopa</option>
+                <option value="gramas">Gramas (g)</option>
+                <option value="unidade">Unidade (Média)</option>
+            </select>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <input type="number" id="calc-qtd" placeholder="Quantidade (ex: 3, 100)" style="flex: 1; margin: 0;">
+            <button type="button" onclick="calcularCalorias()" style="flex: 1; background: #8b5cf6;">Calcular e Preencher ↓</button>
+        </div>
+    </div>
+
+    <div class="card" id="main-form-card">
+        <h3>Adicionar Refeição (Manual)</h3>
         <form action="/add_refeicao" method="POST">
-            <input type="text" name="descricao" placeholder="Descrição (ex: Almoço)" required>
-            <input type="number" name="calorias" placeholder="Calorias Totais" required>
-            <button type="submit">Adicionar</button>
+            <input type="text" name="descricao" id="desc-refeicao" placeholder="Descrição (ex: Almoço)" required>
+            <input type="number" name="calorias" id="cal-refeicao" placeholder="Calorias Totais" required>
+            <button type="submit">Salvar Refeição</button>
         </form>
     </div>
 
@@ -68,5 +94,71 @@
     </div>
 </div>
 
+<script>
+    const tabelaNutricional = {
+        // Valores aproximados: kcal por grama, kcal por colher de sopa, kcal por unidade
+        'arroz_branco': { nome: 'Arroz Branco', gramas: 1.3, colher_sopa: 26, unidade: null },
+        'feijao_carioca': { nome: 'Feijão Carioca', gramas: 0.76, colher_sopa: 15, unidade: null },
+        'frango_grelhado': { nome: 'Frango Grelhado', gramas: 1.6, colher_sopa: 32, unidade: null },
+        'carne_moida': { nome: 'Carne Moída (Patinho)', gramas: 1.33, colher_sopa: 27, unidade: null },
+        'ovo_cozido': { nome: 'Ovo Cozido', gramas: 1.55, colher_sopa: null, unidade: 71 },
+        'aveia': { nome: 'Aveia em Flocos', gramas: 3.8, colher_sopa: 57, unidade: null },
+        'banana': { nome: 'Banana Prata', gramas: 0.89, colher_sopa: null, unidade: 65 },
+        'pao_frances': { nome: 'Pão Francês', gramas: 3.0, colher_sopa: null, unidade: 150 }
+    };
+
+    function calcularCalorias() {
+        const idAlimento = document.getElementById('calc-alimento').value;
+        const unidade = document.getElementById('calc-unidade').value;
+        const qtdStr = document.getElementById('calc-qtd').value;
+        const qtd = parseFloat(qtdStr);
+
+        if (isNaN(qtd) || qtd <= 0) {
+            alert("Por favor, insira uma quantidade válida maior que zero.");
+            return;
+        }
+
+        const alimento = tabelaNutricional[idAlimento];
+        let calorias = 0;
+        let sufixoDescricao = "";
+
+        if (unidade === 'gramas') {
+            if (alimento.gramas === null) {
+                alert("Este alimento não tem conversão exata em gramas cadastrada, tente unidade.");
+                return;
+            }
+            calorias = alimento.gramas * qtd;
+            sufixoDescricao = `${qtd}g`;
+        } else if (unidade === 'colher_sopa') {
+            if (alimento.colher_sopa === null) {
+                alert("Este alimento não costuma ser medido em colheres de sopa, tente outra unidade (ex: unidade).");
+                return;
+            }
+            calorias = alimento.colher_sopa * qtd;
+            sufixoDescricao = qtd === 1 ? `${qtd} Colher` : `${qtd} Colheres`;
+        } else if (unidade === 'unidade') {
+            if (alimento.unidade === null) {
+                alert("Este alimento não é medido por unidade média, tente gramas ou colheres.");
+                return;
+            }
+            calorias = alimento.unidade * qtd;
+            sufixoDescricao = qtd === 1 ? `${qtd} Unidade` : `${qtd} Unidades`;
+        }
+
+        calorias = Math.round(calorias);
+
+        // Preenche o formulário principal
+        document.getElementById('desc-refeicao').value = `${alimento.nome} (${sufixoDescricao})`;
+        document.getElementById('cal-refeicao').value = calorias;
+        
+        // Efeito visual de destaque
+        const mainForm = document.getElementById('main-form-card');
+        mainForm.style.transition = "box-shadow 0.3s";
+        mainForm.style.boxShadow = "0 0 15px #10b981";
+        setTimeout(() => {
+            mainForm.style.boxShadow = "0 4px 6px rgba(0,0,0,0.1)";
+        }, 1000);
+    }
+</script>
 </body>
 </html>
