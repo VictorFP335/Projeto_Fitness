@@ -146,6 +146,34 @@ def login():
             flash('Login inválido. Verifique suas credenciais.', 'error')
     return render_template('login.html')
 
+@app.route('/login_visitante')
+def login_visitante():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    
+    email_visitante = "visitante@calorifit.com"
+    user = User.query.filter_by(email=email_visitante).first()
+    
+    if not user:
+        user = User(
+            email=email_visitante,
+            password_hash=generate_password_hash("senha_visitante_123"),
+            nome="Visitante",
+            idade=25,
+            peso=75.0,
+            altura=175.0,
+            sexo="M",
+            objetivo="Explorar o App",
+            anotacoes="Esta é uma conta compartilhada para testes e demonstração."
+        )
+        db.session.add(user)
+        db.session.commit()
+    
+    login_user(user)
+    flash('Bem-vindo! Você está acessando como Visitante. Lembre-se: seus dados são compartilhados.', 'info')
+    return redirect(url_for('home'))
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:

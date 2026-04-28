@@ -30,6 +30,16 @@
           {% endif %}
         {% endwith %}
 
+        {% if current_user.email == 'visitante@calorifit.com' %}
+        <div class="card" style="background: rgba(59, 130, 246, 0.1); border: 1px solid var(--primary); margin-bottom: 20px;">
+            <div style="color: var(--primary); font-weight: 600; display: flex; align-items: center; gap: 10px;">
+                <span>ℹ️</span>
+                <span>Você está no <strong>Modo Visitante</strong>. Esta conta é pública e compartilhada.</span>
+            </div>
+        </div>
+        {% endif %}
+
+
         {% if current_user.objetivo %}
         <div class="card" style="border-left: 5px solid var(--warning); border-top: none;">
             <div style="color: var(--warning); font-weight: 700;">🎯 Meu Propósito: {{ current_user.objetivo }}</div>
