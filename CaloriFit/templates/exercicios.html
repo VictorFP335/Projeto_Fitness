@@ -4,93 +4,93 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exercícios</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 0; }
-        .topbar { background: #1e293b; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .topbar .title { font-weight: 700; font-size: 1.2rem; color: #38bdf8; }
-        .topbar .user-info { display: flex; gap: 15px; align-items: center; }
-        .logout-btn { color: #ef4444; text-decoration: none; font-weight: 600; }
-        .container { max-width: 800px; margin: 30px auto; padding: 20px; }
-        .card { background: #1e293b; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h2, h3 { color: #38bdf8; margin-top: 0; }
-        input { width: calc(100% - 20px); padding: 10px; margin: 10px 0; border: none; border-radius: 6px; background: #334155; color: white; display: block; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-        button:hover { background: #2563eb; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; }
-        th { color: #94a3b8; font-weight: 600; }
-        .btn-back { display: inline-block; margin-top: 20px; color: #38bdf8; text-decoration: none; }
-        .btn-back:hover { text-decoration: underline; }
-    </style>
-</head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=3">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"></head>
 <body>
 
 <div class="topbar">
     <div class="title">Exercícios</div>
     <div class="user-info">
-        <a href="/" style="color: #94a3b8; text-decoration: none; margin-right: 15px;">Dashboard</a>
+        <a href="/" style="color: var(--text-muted);">Dashboard</a>
         <span>{{ current_user.nome }}</span>
-        <a href="/logout" class="logout-btn">Sair</a>
+        <a href="/logout" class="btn-danger" style="padding: 5px 10px; border-radius: 4px; font-size: 0.8rem;">Sair</a>
     </div>
 </div>
 
 <div class="container">
-    <div class="card" style="border-top-color: #3b82f6;">
-        <h3 style="color: #3b82f6;">Calculadora de Exercícios</h3>
-        <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 15px; margin-top: -10px;">Estime o gasto calórico baseado no seu peso (<strong>{{ current_user.peso }} kg</strong>) e tempo de treino.</p>
-        <div style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
-            <select id="calc-exercicio" style="flex: 2; padding: 10px; border-radius: 6px; background: #334155; color: white; border: none; font-family: 'Inter', sans-serif;">
-                <option value="caminhada">Caminhada (Moderada)</option>
-                <option value="corrida">Corrida (~10 km/h)</option>
-                <option value="academia">Musculação (Academia)</option>
-                <option value="bicicleta">Bicicleta (Moderada)</option>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="card" style="border-top-color: var(--primary);">
+        <h3 style="color: var(--primary);">Calculadora de Exercícios</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Baseado no seu peso ({{ current_user.peso }} kg).</p>
+        <div class="grid grid-2 mb-4">
+            <select id="calc-exercicio">
+                <option value="caminhada">Caminhada</option>
+                <option value="corrida">Corrida</option>
+                <option value="academia">Musculação</option>
+                <option value="bicicleta">Bicicleta</option>
                 <option value="natacao">Natação</option>
                 <option value="corda">Pular Corda</option>
                 <option value="futebol">Futebol</option>
                 <option value="danca">Dança / Aeróbica</option>
             </select>
-            <input type="number" id="calc-tempo" placeholder="Tempo (minutos)" style="flex: 1; margin: 0;">
+            <input type="number" id="calc-tempo" placeholder="Tempo (min)" style="margin: 0;">
+            <button type="button" class="btn btn-primary" onclick="calcularExercicio()">Calcular ↓</button>
         </div>
-        <button type="button" onclick="calcularExercicio()" style="width: 100%; padding: 10px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s;">Calcular e Preencher ↓</button>
     </div>
 
-    <div class="card" id="main-form-card">
-        <h3>Adicionar Exercício (Manual)</h3>
+    <div class="card" id="main-form-card" style="border-top-color: var(--success);">
+        <h3 style="color: var(--success);">Adicionar Exercício</h3>
         <form action="/add_exercicio" method="POST">
-            <input type="text" name="nome" id="desc-exercicio" placeholder="Exercício (ex: Corrida 30min)" required>
+            <input type="hidden" name="data_log" value="{{ request.args.get('data', '') }}">
+            <input type="text" name="nome" id="desc-exercicio" placeholder="Ex: Corrida 30min" required>
             <input type="number" name="calorias" id="cal-exercicio" placeholder="Calorias Gastas" required>
-            <button type="submit">Salvar Exercício</button>
+            <button type="submit" class="btn btn-success">Salvar Exercício</button>
         </form>
     </div>
 
     <div class="card">
-        <h2>Histórico de Exercícios</h2>
-        <table>
-            <tr>
-                <th>Nome</th>
-                <th>Calorias Gastas</th>
-                <th>Data e Hora</th>
-            </tr>
-            {% for e in exercicios %}
-            <tr>
-                <td>{{ e.nome }}</td>
-                <td>{{ e.calorias }} kcal</td>
-                <td>{{ e.data }}</td>
-            </tr>
-            {% else %}
-            <tr><td colspan="3" style="text-align: center; color: #94a3b8;">Nenhum exercício registrado.</td></tr>
-            {% endfor %}
-        </table>
-        <a href="/" class="btn-back">← Voltar para Dashboard</a>
+        <h3>Histórico</h3>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Exercício</th>
+                        <th>Calorias Gastas</th>
+                        <th>Data</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in exercicios %}
+                    <tr>
+                        <td>{{ e.nome }}</td>
+                        <td>{{ e.calorias }} kcal</td>
+                        <td>{{ e.data }}</td>
+                        <td>
+                            <a href="{{ url_for('delete_exercicio', id=e.id) }}" style="color: var(--danger);" onclick="return confirm('Excluir?')">Excluir</a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" class="text-center" style="color: var(--text-muted);">Vazio.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-4">
+            <a href="/" style="color: var(--primary);">← Voltar para Dashboard</a>
+        </div>
     </div>
 </div>
 
 <script>
-    // Injeta o peso do usuário vindo do backend do Flask
     const pesoUsuario = parseFloat("{{ current_user.peso }}");
-    
     const tabelaMET = {
         'caminhada': { nome: 'Caminhada', met: 4.0 },
         'corrida': { nome: 'Corrida', met: 9.8 },
@@ -99,37 +99,17 @@
         'natacao': { nome: 'Natação', met: 7.0 },
         'corda': { nome: 'Pular Corda', met: 11.0 },
         'futebol': { nome: 'Futebol', met: 7.0 },
-        'danca': { nome: 'Dança / Aeróbica', met: 5.0 }
+        'danca': { nome: 'Dança', met: 5.0 }
     };
 
     function calcularExercicio() {
-        const idExercicio = document.getElementById('calc-exercicio').value;
-        const tempoStr = document.getElementById('calc-tempo').value;
-        const minutos = parseFloat(tempoStr);
-
-        if (isNaN(minutos) || minutos <= 0) {
-            alert("Por favor, insira um tempo válido em minutos.");
-            return;
-        }
-
-        const exercicio = tabelaMET[idExercicio];
-        const horas = minutos / 60;
-        
-        // Fórmula Oficial: Calorias = MET * Peso (kg) * Tempo (horas)
-        let caloriasGastas = exercicio.met * pesoUsuario * horas;
-        caloriasGastas = Math.round(caloriasGastas);
-
-        // Preenche o formulário principal
-        document.getElementById('desc-exercicio').value = `${exercicio.nome} (${minutos} min)`;
-        document.getElementById('cal-exercicio').value = caloriasGastas;
-        
-        // Efeito visual de destaque (brilho azul)
-        const mainForm = document.getElementById('main-form-card');
-        mainForm.style.transition = "box-shadow 0.3s";
-        mainForm.style.boxShadow = "0 0 15px #3b82f6";
-        setTimeout(() => {
-            mainForm.style.boxShadow = "0 4px 6px rgba(0,0,0,0.1)";
-        }, 1000);
+        const idEx = document.getElementById('calc-exercicio').value;
+        const minutos = parseFloat(document.getElementById('calc-tempo').value);
+        if (isNaN(minutos) || minutos <= 0) return;
+        const ex = tabelaMET[idEx];
+        let calorias = ex.met * pesoUsuario * (minutos / 60);
+        document.getElementById('desc-exercicio').value = `${ex.nome} (${minutos} min)`;
+        document.getElementById('cal-exercicio').value = Math.round(calorias);
     }
 </script>
 </body>

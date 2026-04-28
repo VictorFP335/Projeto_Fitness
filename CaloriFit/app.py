@@ -3,12 +3,16 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from flask_mail import Mail, Message
+from itsdangerous import URLSafeTimedSerializer
 import os
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'chave_super_secreta_padrao')
 
 DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///calorifit_v3.db')
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -16,6 +20,15 @@ db = SQLAlchemy(app)
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
+
+# Configuração de E-mail
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.googlemail.com')
+app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True').lower() in ['true', 'on', '1']
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER', 'calorifit@noreply.com')
+mail = Mail(app)
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -33,6 +46,19 @@ class User(UserMixin, db.Model):
     aguas = db.relationship('Agua', backref='user', lazy=True)
     lembretes = db.relationship('Lembrete', backref='user', lazy=True)
     pesos = db.relationship('PesoLog', backref='user', lazy=True, order_by='PesoLog.data_crua')
+
+    def get_reset_token(self):
+        s = URLSafeTimedSerializer(app.secret_key)
+        return s.dumps(self.email, salt='password-reset-salt')
+
+    @staticmethod
+    def verify_reset_token(token, expires_sec=1800):
+        s = URLSafeTimedSerializer(app.secret_key)
+        try:
+            email = s.loads(token, salt='password-reset-salt', max_age=expires_sec)
+        except:
+            return None
+        return User.query.filter_by(email=email).first()
 
     def calcular_bmr(self):
         # Fórmula de Harris-Benedict
@@ -91,6 +117,18 @@ with app.app_context():
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+def send_reset_email(user):
+    token = user.get_reset_token()
+    msg = Message('Redefinição de Senha - CaloriFit',
+                  sender=app.config['MAIL_DEFAULT_SENDER'],
+                  recipients=[user.email])
+    msg.body = f'''Para redefinir sua senha, visite o seguinte link:
+{url_for('reset_token', token=token, _external=True)}
+
+Se você não solicitou esta alteração, ignore este e-mail.
+'''
+    mail.send(msg)
+
 # Autenticação
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -117,12 +155,17 @@ def register():
         email = request.form.get('email')
         senha = request.form.get('senha')
         nome = request.form.get('nome')
-        idade = int(request.form.get('idade'))
-        peso = float(request.form.get('peso'))
-        altura = float(request.form.get('altura'))
         sexo = request.form.get('sexo')
         objetivo = request.form.get('objetivo')
         anotacoes = request.form.get('anotacoes')
+
+        try:
+            idade = int(request.form.get('idade', 0))
+            peso = float(request.form.get('peso', 0))
+            altura = float(request.form.get('altura', 0))
+        except (ValueError, TypeError):
+            flash('Por favor, insira valores numéricos válidos para idade, peso e altura.', 'error')
+            return redirect(url_for('register'))
 
         if User.query.filter_by(email=email).first():
             flash('Email já cadastrado.', 'error')
@@ -154,16 +197,44 @@ def logout():
 
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
     if request.method == 'POST':
         email = request.form.get('email')
         user = User.query.filter_by(email=email).first()
         if user:
-            # Em um cenário real enviaríamos um e-mail com token.
-            # Aqui simularemos via flash para facilitar o teste.
-            flash('Simulação: Um link de recuperação foi enviado para o seu e-mail (Token Simulado)', 'info')
+            try:
+                send_reset_email(user)
+                flash('Um e-mail foi enviado com instruções para redefinir sua senha.', 'info')
+            except Exception as e:
+                flash(f'Erro ao enviar e-mail: {str(e)}', 'error')
         else:
-            flash('E-mail não encontrado.', 'error')
+            flash('Não existe uma conta com este e-mail.', 'error')
     return render_template('forgot_password.html')
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_token(token):
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    user = User.verify_reset_token(token)
+    if user is None:
+        flash('Esse é um token inválido ou expirado.', 'error')
+        return redirect(url_for('forgot_password'))
+    
+    if request.method == 'POST':
+        senha = request.form.get('senha')
+        confirmar_senha = request.form.get('confirmar_senha')
+        
+        if senha != confirmar_senha:
+            flash('As senhas não coincidem.', 'error')
+            return render_template('reset_password.html')
+            
+        user.password_hash = generate_password_hash(senha)
+        db.session.commit()
+        flash('Sua senha foi atualizada! Você já pode fazer login.', 'info')
+        return redirect(url_for('login'))
+        
+    return render_template('reset_password.html')
 
 # Dashboard
 @app.route('/')
@@ -209,8 +280,16 @@ def home():
         if dia == hj:
             agua_consumida += a.quantidade_ml
 
-    # Combinar todas as datas (únicas e ordenadas em formato string pra simplicar)
-    todas_datas = sorted(list(set(list(consumo_por_dia.keys()) + list(gasto_por_dia.keys()))))
+    # Combinar todas as datas (únicas e ordenadas cronologicamente)
+    # Inclui datas de refeições, exercícios e água para garantir gráfico completo
+    datas_refeicoes = [r.data.split(' ')[0] for r in refeicoes_data]
+    datas_exercicios = [e.data.split(' ')[0] for e in exercicios_data]
+    datas_aguas = [a.data.split(' ')[0] for a in aguas_data]
+    
+    todas_datas = sorted(
+        list(set(datas_refeicoes + datas_exercicios + datas_aguas)),
+        key=lambda x: datetime.strptime(x, "%d/%m/%Y")
+    )
     
     grafico_consumo = [consumo_por_dia.get(d, 0) for d in todas_datas]
     grafico_gasto = [gasto_por_dia.get(d, 0) for d in todas_datas]
@@ -241,18 +320,25 @@ def home():
 @app.route('/add_peso', methods=['POST'])
 @login_required
 def add_peso():
-    valor = float(request.form['valor'])
-    data = datetime.now().strftime("%d/%m/%Y")
+    try:
+        valor = float(request.form['valor'])
+        data_log = request.form.get('data_log')
+        if data_log:
+            data = datetime.strptime(data_log, '%Y-%m-%d').strftime("%d/%m/%Y")
+        else:
+            data = datetime.now().strftime("%d/%m/%Y")
+        
+        # Atualiza o peso atual do usuário
+        current_user.peso = valor
+        
+        # Cria log para o gráfico
+        novo_log = PesoLog(valor=valor, data=data, user_id=current_user.id)
+        db.session.add(novo_log)
+        db.session.commit()
+        flash('Peso atualizado com sucesso!', 'info')
+    except (ValueError, KeyError):
+        flash('Valor de peso inválido.', 'error')
     
-    # Atualiza o peso atual do usuário
-    current_user.peso = valor
-    
-    # Cria log para o gráfico
-    novo_log = PesoLog(valor=valor, data=data, user_id=current_user.id)
-    db.session.add(novo_log)
-    db.session.commit()
-    
-    flash('Peso atualizado com sucesso!', 'info')
     return redirect(url_for('home'))
 
 @app.route('/refeicoes')
@@ -264,13 +350,31 @@ def mostrar_refeicoes():
 @app.route('/add_refeicao', methods=['POST'])
 @login_required
 def add_refeicao():
-    descricao = request.form['descricao']
-    calorias = int(request.form['calorias'])
-    data = datetime.now().strftime("%d/%m/%Y %H:%M")
-    nova = Refeicao(descricao=descricao, calorias=calorias, data=data, user_id=current_user.id)
-    db.session.add(nova)
-    db.session.commit()
-    return redirect('/refeicoes')
+    try:
+        descricao = request.form['descricao']
+        calorias = int(request.form['calorias'])
+        data_log = request.form.get('data_log')
+        if data_log:
+            data = datetime.strptime(data_log, '%Y-%m-%d').strftime("%d/%m/%Y %H:%M")
+        else:
+            data = datetime.now().strftime("%d/%m/%Y %H:%M")
+            
+        nova = Refeicao(descricao=descricao, calorias=calorias, data=data, user_id=current_user.id)
+        db.session.add(nova)
+        db.session.commit()
+    except (ValueError, KeyError):
+        flash('Dados da refeição inválidos.', 'error')
+    return redirect(url_for('mostrar_refeicoes', data=request.form.get('data_log')))
+
+@app.route('/delete_refeicao/<int:id>')
+@login_required
+def delete_refeicao(id):
+    refeicao = Refeicao.query.get_or_404(id)
+    if refeicao.user_id == current_user.id:
+        db.session.delete(refeicao)
+        db.session.commit()
+        flash('Refeição excluída.', 'info')
+    return redirect(url_for('mostrar_refeicoes'))
 
 @app.route('/exercicios')
 @login_required
@@ -281,23 +385,50 @@ def mostrar_exercicios():
 @app.route('/add_exercicio', methods=['POST'])
 @login_required
 def add_exercicio():
-    nome = request.form['nome']
-    calorias = int(request.form['calorias'])
-    data = datetime.now().strftime("%d/%m/%Y %H:%M")
-    novo = Exercicio(nome=nome, calorias=calorias, data=data, user_id=current_user.id)
-    db.session.add(novo)
-    db.session.commit()
-    return redirect('/exercicios')
+    try:
+        nome = request.form['nome']
+        calorias = int(request.form['calorias'])
+        data_log = request.form.get('data_log')
+        if data_log:
+            data = datetime.strptime(data_log, '%Y-%m-%d').strftime("%d/%m/%Y %H:%M")
+        else:
+            data = datetime.now().strftime("%d/%m/%Y %H:%M")
+            
+        novo = Exercicio(nome=nome, calorias=calorias, data=data, user_id=current_user.id)
+        db.session.add(novo)
+        db.session.commit()
+    except (ValueError, KeyError):
+        flash('Dados do exercício inválidos.', 'error')
+    return redirect(url_for('mostrar_exercicios', data=request.form.get('data_log')))
+
+@app.route('/delete_exercicio/<int:id>')
+@login_required
+def delete_exercicio(id):
+    exercicio = Exercicio.query.get_or_404(id)
+    if exercicio.user_id == current_user.id:
+        db.session.delete(exercicio)
+        db.session.commit()
+        flash('Exercício excluído.', 'info')
+    return redirect(url_for('mostrar_exercicios'))
 
 @app.route('/add_agua', methods=['POST'])
 @login_required
 def add_agua():
-    quantidade_ml = int(request.form['quantidade_ml'])
-    data = datetime.now().strftime("%d/%m/%Y %H:%M")
-    nova_agua = Agua(quantidade_ml=quantidade_ml, data=data, user_id=current_user.id)
-    db.session.add(nova_agua)
-    db.session.commit()
-    return redirect(url_for('home'))
+    try:
+        quantidade_ml = int(request.form['quantidade_ml'])
+        data_log = request.form.get('data_log')
+        if data_log:
+            # Para água, usamos apenas a data sem hora para simplificar o agrupamento se necessário
+            data = datetime.strptime(data_log, '%Y-%m-%d').strftime("%d/%m/%Y 00:00")
+        else:
+            data = datetime.now().strftime("%d/%m/%Y %H:%M")
+            
+        nova_agua = Agua(quantidade_ml=quantidade_ml, data=data, user_id=current_user.id)
+        db.session.add(nova_agua)
+        db.session.commit()
+    except (ValueError, KeyError):
+        flash('Erro ao registrar água.', 'error')
+    return redirect(url_for('home', data=request.form.get('data_log')))
 
 @app.route('/add_lembrete', methods=['POST'])
 @login_required
