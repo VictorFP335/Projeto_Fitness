@@ -186,6 +186,11 @@ def home():
         data_exibicao = datetime.now().strftime("%Y-%m-%d")
     
     # Processamento para agrupar por dia (Gráficos melhorados)
+    consumo_por_dia = {}
+    gasto_por_dia = {}
+    total_consumido = 0
+    total_gasto = 0
+    agua_consumida = 0
     
     for r in refeicoes_data:
         dia = r.data.split(' ')[0]
@@ -226,6 +231,7 @@ def home():
         meta_agua=meta_agua,
         lembretes=lembretes,
         labels_dias=todas_datas,
+        dados_consumo=grafico_consumo,
         dados_gasto=grafico_gasto,
         data_exibicao=data_exibicao,
         labels_peso=[p.data for p in pesos_data],
