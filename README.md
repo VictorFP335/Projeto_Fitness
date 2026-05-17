@@ -1,14 +1,14 @@
 Perfeito! Aqui está um **README.md** completo em Markdown para o seu projeto, já com a **licença MIT** adaptada para o nome **Calorifit**:
 
-```markdown
-# Calorifit 🏋️‍♂️🔥
+
+# Calorifit
 
 Um aplicativo voltado para auxiliar no acompanhamento de treinos e hábitos saudáveis.  
 O **Calorifit** foi desenvolvido com foco em praticidade, organização e motivação para quem busca melhorar sua rotina fitness.
 
 ---
 
-## 🚀 Funcionalidades
+##  Funcionalidades
 - Cadastro de usuários e perfis de treino
 - Registro de exercícios e séries
 - Acompanhamento de progresso (peso, medidas, desempenho)
@@ -17,7 +17,7 @@ O **Calorifit** foi desenvolvido com foco em praticidade, organização e motiva
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+##  Tecnologias Utilizadas
 - **Linguagem:** Python / JavaScript (ajuste conforme seu projeto)
 - **Framework:** Django / React (ou outro utilizado)
 - **Banco de Dados:** SQLite / PostgreSQL
@@ -25,8 +25,8 @@ O **Calorifit** foi desenvolvido com foco em praticidade, organização e motiva
 
 ---
 
-## 📂 Estrutura do Projeto
-```
+##  Estrutura do Projeto
+
 Projeto_Fitness/
 │── src/              # Código-fonte principal
 │── docs/             # Documentação
@@ -37,13 +37,13 @@ Projeto_Fitness/
 
 ---
 
-## ⚙️ Como Executar
+##  Como Executar
 1. Clone este repositório:
-   ```bash
+
    git clone https://github.com/VictorFP335/Projeto_Fitness.git
-   ```
+
 2. Acesse a pasta do projeto:
-   ```bash
+
    cd Projeto_Fitness
    ```
 3. Instale as dependências:
@@ -57,7 +57,7 @@ Projeto_Fitness/
 
 ---
 
-## 📌 Contribuição
+##  Contribuição
 Contribuições são bem-vindas!  
 Para colaborar:
 1. Faça um fork do projeto
@@ -68,7 +68,7 @@ Para colaborar:
 
 ---
 
-## 📄 Licença
+## Licença
 
 MIT License  
 
@@ -94,8 +94,8 @@ THE SOFTWARE.
 
 ---
 
-## 👨‍💻 Autor
-Desenvolvido por **VictorFP335**  
+##  Autor
+Desenvolvido por **Victor FUrumoto Puttommatti**, usuario **VictorFP335**  
 Se gostou do projeto, não esqueça de deixar uma ⭐ no repositório!
 ```
 
