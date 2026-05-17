@@ -1,6 +1,3 @@
-Perfeito! Aqui está um **README.md** completo em Markdown para o seu projeto, já com a **licença MIT** adaptada para o nome **Calorifit**:
-
-
 # Calorifit
 
 Um aplicativo voltado para auxiliar no acompanhamento de treinos e hábitos saudáveis.  
