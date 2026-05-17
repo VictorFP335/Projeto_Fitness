@@ -96,9 +96,8 @@ THE SOFTWARE.
 
 ##  Autor
 Desenvolvido por **Victor FUrumoto Puttommatti**, usuario **VictorFP335**  
+Projeto acadêmico para a disciplina de Práticas de Empreendedorismo 
 Se gostou do projeto, não esqueça de deixar uma ⭐ no repositório!
 ```
 
-Esse README já está pronto para ser colocado na branch **main** do seu repositório.  
 
-Quer que eu também crie um **badge estilizado** (como “MIT License”, “Build Passing”, etc.) para deixar o README mais visual e profissional?
